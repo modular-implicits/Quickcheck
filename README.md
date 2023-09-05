@@ -13,4 +13,4 @@ Or
   `Failure: {num_tests: 0, used_seed: 650494855, failing_case: {ok: false, expect: true, reason: "Falsifiable", test_case: "(936052328) (129383761)", the_exception: None}}`
 
 Quickcheck will also catch exceptions and report them with the relevant test cases:
- ` Failure: {num_tests: 0, used_seed: 1071023854, failing_case: {ok: false, expect: true, reason: "Falsifiable", test_case: "(MkBasic 811252409) (256990194)", the_exception: None}}`
+ ` Failure: {num_tests: 0, used_seed: 275906564, failing_case: {ok: false, expect: true, reason: "", test_case: "(())", the_exception: Dune__exe__Test.Not_Implemented}}`
