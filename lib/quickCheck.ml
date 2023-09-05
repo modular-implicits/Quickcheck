@@ -30,11 +30,51 @@ implicit module IntArbitrary : Arbitrary with type t = int = struct
   let arbitrary () = Random.int 1000
 end
 
+implicit module ListArbitrary {A : Arbitrary} : Arbitrary with type t = A.t list = struct
+  type t = A.t list
+  let arbitrary () = 
+    let rec myLoop (i : int) (acc : A.t list) = if i = 0 then acc else myLoop (i - 1) ((A.arbitrary ()) :: acc) in 
+    myLoop (Random.int 1000) []
+end
+
+implicit module CharArbitrary : Arbitrary with type t = char = struct
+  type t = char
+  let arbitrary () = (Char.chr (97 + (Random.int 26)));;
+end
+
+implicit module StringArbitrary : Arbitrary with type t = string = struct 
+  type t = string 
+  let arbitrary () = 
+    let rec myLoop (i : int) (acc : string) = if i = 0 then acc else myLoop (i - 1) ((Char.escaped (CharArbitrary.arbitrary ())) ^ acc) in 
+    myLoop (Random.int 1000) ""
+end
+
+implicit module BoolArbitrary : Arbitrary with type t = bool = struct 
+  type t = bool
+  let arbitrary () = 
+    let rand = Random.int 2 in 
+    if rand = 0 then true else false
+end
+
+implicit module OptionArbitrary {A : Arbitrary} : Arbitrary with type t = A.t option = struct 
+  type t = A.t option
+  let arbitrary () = 
+    let rand = Random.int 10 in 
+    if rand = 0 then None else Some (A.arbitrary ())
+end
+
+implicit module UnitArbitrary : Arbitrary with type t = unit = struct 
+  type t = unit
+  let arbitrary () = ()
+end
+
+
 type result = {
   ok                : bool option; (* result of the test case; None = discard *)
   expect            : bool;        (* indicates what the expected result of the property is *)
   reason            : string;     
-  test_case         : string;} (* a message indicating what went wrong 
+  test_case         : string;
+  the_exception     : exn option;} (* a message indicating what went wrong 
   the_exception     : an_exception option; (* the exception thrown, if any *)
   abort             : bool;        (* if True, the test should not be repeated *)
   maybe_num_tests   : int option;  (* stop after this many tests *)
@@ -47,8 +87,10 @@ type result = {
   test_case         : string list; (* the generated test case *) 
 } *)
 
+let string_of_exception e = Printexc.to_string e
 
-let basic_result : result = {ok = None; expect = true; reason = ""; test_case = ""}
+
+let basic_result : result = {ok = None; expect = true; reason = ""; test_case = ""; the_exception = None}
 
 let string_of_result r =
   let string_of_ok = function
@@ -56,8 +98,12 @@ let string_of_result r =
     | Some false -> "false"
     | None -> "discard"
   in
-  Printf.sprintf "ok: %s, expect: %b, reason: \"%s\", test_case: \"%s\""
-    (string_of_ok r.ok) r.expect r.reason r.test_case
+  let string_of_exn = function
+    | Some e -> string_of_exception e
+    | None -> "None"
+  in
+  Printf.sprintf "ok: %s, expect: %b, reason: \"%s\", test_case: \"%s\", the_exception: %s"
+    (string_of_ok r.ok) r.expect r.reason r.test_case (string_of_exn r.the_exception)
 
 let succeeded : result = {basic_result with ok = Some true} (* ; expect = true}*)
 let failed : result = {basic_result with ok = Some false}
@@ -105,6 +151,8 @@ implicit module Testable {A : Arbitrary} {S : Show with type t = A.t} {T : Testa
                                                                       | MkProperty g -> add_case {S} test_val (g ()))
 end
 
+let rand_chr () = (Char.chr (97 + (Random.int 26)));; 
+
 let giveResults {T : Testable} (x : T.t) = 
   let () = Random.self_init ()(* Sets the seed *) in 
   let (MkProperty f) = T.property x in
@@ -140,7 +188,7 @@ let quickCheck {T : Testable} (x : T.t) =
   let seed = Random.bits () in
   let () = Random.init seed in (* Sets the seed to be random *)
 
-  let rec myLoop (i : int) (f : unit -> result) = if i = 5 then Success {num_tests = i} else 
+  let rec myLoop (i : int) (f : unit -> result) = if i = 1000 then Success {num_tests = i} else 
     let result = f () in 
       match result.ok with
       | Some true -> myLoop (i + 1) f
