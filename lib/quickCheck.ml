@@ -23,13 +23,22 @@ end
 module type Arbitrary = sig
   type t
   val arbitrary : t gen
+  val shrink : t -> t list
 end
 
 let get_val {A : Arbitrary} () = A.arbitrary ()
+let shrink' {A : Arbitrary} = A.shrink
 
 implicit module IntArbitrary : Arbitrary with type t = int = struct
   type t = int
-  let arbitrary () = Random.int 1000
+  let arbitrary () = Random.bits ()
+  let shrink _ = []
+end
+
+implicit module FloatArbitrary : Arbitrary with type t = float = struct
+  type t = float
+  let arbitrary () = Random.float (2. ** 29.)
+  let shrink _ = []
 end
 
 implicit module ListArbitrary {A : Arbitrary} : Arbitrary with type t = A.t list = struct
@@ -37,11 +46,13 @@ implicit module ListArbitrary {A : Arbitrary} : Arbitrary with type t = A.t list
   let arbitrary () = 
     let rec myLoop (i : int) (acc : A.t list) = if i = 0 then acc else myLoop (i - 1) ((A.arbitrary ()) :: acc) in 
     myLoop (Random.int 1000) []
+  let shrink _ = []
 end
 
 implicit module CharArbitrary : Arbitrary with type t = char = struct
   type t = char
   let arbitrary () = (Char.chr (97 + (Random.int 26)));;
+  let shrink _ = []
 end
 
 implicit module StringArbitrary : Arbitrary with type t = string = struct 
@@ -49,13 +60,13 @@ implicit module StringArbitrary : Arbitrary with type t = string = struct
   let arbitrary () = 
     let rec myLoop (i : int) (acc : string) = if i = 0 then acc else myLoop (i - 1) ((Char.escaped (CharArbitrary.arbitrary ())) ^ acc) in 
     myLoop (Random.int 1000) ""
+  let shrink _ = []
 end
 
 implicit module BoolArbitrary : Arbitrary with type t = bool = struct 
   type t = bool
-  let arbitrary () = 
-    let rand = Random.int 2 in 
-    if rand = 0 then true else false
+  let arbitrary = Random.bool
+  let shrink _ = []
 end
 
 implicit module OptionArbitrary {A : Arbitrary} : Arbitrary with type t = A.t option = struct 
@@ -63,16 +74,31 @@ implicit module OptionArbitrary {A : Arbitrary} : Arbitrary with type t = A.t op
   let arbitrary () = 
     let rand = Random.int 10 in 
     if rand = 0 then None else Some (A.arbitrary ())
+  let shrink _ = []
 end
 
 implicit module UnitArbitrary : Arbitrary with type t = unit = struct 
   type t = unit
   let arbitrary () = ()
+  let shrink _ = []
 end
 
 implicit module PairArbitrary {A : Arbitrary} {B : Arbitrary} : Arbitrary with type t = A.t * B.t = struct 
   type t = A.t * B.t
   let arbitrary () = (A.arbitrary (), B.arbitrary ())
+  let shrink _ = []
+end
+
+implicit module TripleArbitrary {A : Arbitrary} {B : Arbitrary} {C : Arbitrary} : Arbitrary with type t = A.t * B.t * C.t = struct 
+  type t = A.t * B.t * C.t
+  let arbitrary () = (A.arbitrary (), B.arbitrary (), C.arbitrary ())
+  let shrink _ = []
+end
+
+implicit module QuadTupleArbitrary {A : Arbitrary} {B : Arbitrary} {C : Arbitrary} {D : Arbitrary} : Arbitrary with type t = A.t * B.t * C.t * D.t = struct 
+  type t = A.t * B.t * C.t * D.t
+  let arbitrary () = (A.arbitrary (), B.arbitrary (), C.arbitrary (), D.arbitrary ())
+  let shrink _ = []
 end
 
 open Generics.Generic;;
@@ -103,6 +129,7 @@ end
 implicit module ArbibableGeneric {X : Generic} {XRep : Arbibable with type t = X.rep} : Arbitrary with type t = X.t = struct 
   type t = X.t
   let arbitrary () = X.fromRep (XRep.arbibable ())
+  let shrink _ = []
 end
       
 
@@ -194,10 +221,11 @@ end
 
 let rand_chr () = (Char.chr (97 + (Random.int 26)));; 
 
+
 let giveResults {T : Testable} (x : T.t) = 
   let () = Random.self_init ()(* Sets the seed *) in 
   let (MkProperty f) = T.property x in
-  for i = 0 to 4 do 
+  for _ = 0 to 4 do 
     let result = f () in 
     let () = print_endline (string_of_result result) in 
     ()
@@ -234,6 +262,7 @@ let quickCheck {T : Testable} (x : T.t) =
       match result.ok with
       | Some true -> myLoop (i + 1) f
       | Some false -> Failure {num_tests = i; used_seed = seed; failing_case = result}
+      | None -> myLoop (i + 1) f
   in 
 
   let (MkProperty f) = T.property x in
