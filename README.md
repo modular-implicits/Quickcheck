@@ -14,3 +14,5 @@ Or
 
 Quickcheck will also catch exceptions and report them with the relevant test cases:
  ` Failure: {num_tests: 0, used_seed: 275906564, failing_case: {ok: false, expect: true, reason: "", test_case: "(())", the_exception: Dune__exe__Test.Not_Implemented}}`
+
+For custom types, that do not have an `Arbitrary` instance, it is easiest to provide the `Generics` implementation of the type, as that provides a default `Arbitrary` implementation.
