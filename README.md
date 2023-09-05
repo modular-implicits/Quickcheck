@@ -3,9 +3,10 @@ Library based off the Haskell QuickCheck making heavy use of Implicits.
 The user could write something like:
 
 
-`test_commutativity (x : int) (y : int) = x + y = y + x`
-
-`let () = quickCheck test_commutativity`
+```
+test_commutativity (x : int) (y : int) = x + y = y + x
+let () = quickCheck test_commutativity
+```
 
 And it will respond with either:
   `Success: {num_tests: 1000}`
