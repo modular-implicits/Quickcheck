@@ -1,4 +1,4 @@
-Library based off the Haskell QuickCheck library heaving using Implicits.
+Library based off the Haskell QuickCheck making heavy use of Implicits.
 
 The user could write something like:
 
