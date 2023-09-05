@@ -1,0 +1,1 @@
+Library for idioms based of paper http://strictlypositive.org/Idiom.pdf
