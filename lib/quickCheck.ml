@@ -177,7 +177,7 @@ implicit module TestableBool : Testable with type t = bool = struct
 end
 
 let add_case {S : Show} (test_val : S.t) (r : result) = let space = if r.test_case = "" then "" else " " in 
-                          {r with test_case = (S.show test_val) ^ space ^ (r.test_case)}
+                          {r with test_case = "(" ^ (S.show test_val) ^ ")" ^ space ^ (r.test_case)}
 
 
 

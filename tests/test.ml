@@ -45,12 +45,7 @@ implicit module GenEvenBasic : Generic with type t = evenBasic and type rep = in
   let fromRep = function GenBasic (_, x) -> MkBasic x
 end
 
-module XRep : Arbibable with type t = int genBasic = ArbibableGenBasic{IntArbitrary}
-module ArbibableGenEvenBasic : Arbitrary with type t = evenBasic = ArbibableGeneric{GenEvenBasic}{XRep}
-
-let lol (x : evenBasic) : bool = false
-
-let z : evenBasic = get_val {ArbibableGenEvenBasic} ()
+let lol (x : evenBasic) (q : int) : bool = false
 
 
 let () = 
