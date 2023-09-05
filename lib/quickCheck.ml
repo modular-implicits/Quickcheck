@@ -68,6 +68,11 @@ implicit module UnitArbitrary : Arbitrary with type t = unit = struct
   let arbitrary () = ()
 end
 
+implicit module PairArbitrary {A : Arbitrary} {B : Arbitrary} : Arbitrary with type t = A.t * B.t = struct 
+  type t = A.t * B.t
+  let arbitrary () = (A.arbitrary (), B.arbitrary ())
+end
+
 
 type result = {
   ok                : bool option; (* result of the test case; None = discard *)
@@ -147,8 +152,11 @@ implicit module Testable {A : Arbitrary} {S : Show with type t = A.t} {T : Testa
   type t = A.t -> T.t
   let property (f : A.t -> T.t) : property = MkProperty (let rand = A.arbitrary in 
                                                             fun () -> let test_val = rand () in 
-                                                                        match T.property (f test_val) with 
-                                                                      | MkProperty g -> add_case {S} test_val (g ()))
+                                                                      try
+                                                                          match T.property (f test_val) with 
+                                                                        | MkProperty g -> add_case {S} test_val (g ())
+                                                                      with 
+                                                                        | e -> add_case {S} test_val {failed with the_exception = Some e})
 end
 
 let rand_chr () = (Char.chr (97 + (Random.int 26)));; 
