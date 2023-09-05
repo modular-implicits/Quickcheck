@@ -1,5 +1,5 @@
 (library
  (public_name testing)
  (modules QuickCheck)
- (libraries imp dataStructures)
+ (libraries imp dataStructures generics)
  (synopsis "testing framework"))

@@ -25,6 +25,8 @@ module type Arbitrary = sig
   val arbitrary : t gen
 end
 
+let get_val {A : Arbitrary} () = A.arbitrary ()
+
 implicit module IntArbitrary : Arbitrary with type t = int = struct
   type t = int
   let arbitrary () = Random.int 1000
@@ -72,6 +74,37 @@ implicit module PairArbitrary {A : Arbitrary} {B : Arbitrary} : Arbitrary with t
   type t = A.t * B.t
   let arbitrary () = (A.arbitrary (), B.arbitrary ())
 end
+
+open Generics.Generic;;
+
+module type Arbibable = sig 
+  type t
+  val arbibable : t gen
+end
+
+let arbibable {A : Arbibable} = A.arbibable
+
+implicit module ArbibableGenBasic {X : Arbitrary} : Arbibable with type t = X.t genBasic = struct 
+  type t = X.t genBasic
+  let arbibable () = GenBasic ("", X.arbitrary ())
+end
+
+implicit module ArbibableGenProd {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) genProd = struct 
+  type t = (X.t, Y.t) genProd
+  let arbibable () = GenProd (X.arbibable (), Y.arbibable ())
+end
+
+implicit module ArbibableGenSum {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) genSum = struct 
+  type t = (X.t, Y.t) genSum
+  let arbibable () = let rand = Random.int 2 in 
+    if rand = 0 then Left (X.arbibable ()) else Right (Y.arbibable ())
+end
+
+implicit module ArbibableGeneric {X : Generic} {XRep : Arbibable with type t = X.rep} : Arbitrary with type t = X.t = struct 
+  type t = X.t
+  let arbitrary () = X.fromRep (XRep.arbibable ())
+end
+      
 
 
 type result = {
@@ -148,7 +181,7 @@ let add_case {S : Show} (test_val : S.t) (r : result) = let space = if r.test_ca
 
 
 
-implicit module Testable {A : Arbitrary} {S : Show with type t = A.t} {T : Testable} : Testable with type t = A.t -> T.t = struct 
+implicit module TestableFunc {A : Arbitrary} {S : Show with type t = A.t} {T : Testable} : Testable with type t = A.t -> T.t = struct 
   type t = A.t -> T.t
   let property (f : A.t -> T.t) : property = MkProperty (let rand = A.arbitrary in 
                                                             fun () -> let test_val = rand () in 
@@ -206,4 +239,7 @@ let quickCheck {T : Testable} (x : T.t) =
   let (MkProperty f) = T.property x in
       let my_result = myLoop 0 f in
       print_endline (string_of_testResult my_result)
+      
+
+
       

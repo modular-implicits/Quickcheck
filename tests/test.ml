@@ -30,3 +30,29 @@ let () =
 let () =
   print_endline "Test unit func";
   quickCheck testExceptUnit;;
+
+(* Generics example not working sadly *)
+
+open Generics.Generic;;
+open Generics.GenShow;;
+
+type evenBasic = MkBasic of int
+
+implicit module GenEvenBasic : Generic with type t = evenBasic and type rep = int genBasic = struct 
+  type t = evenBasic
+  type rep = int genBasic
+  let toRep = function MkBasic x -> GenBasic ("MkBasic", x)
+  let fromRep = function GenBasic (_, x) -> MkBasic x
+end
+
+module XRep : Arbibable with type t = int genBasic = ArbibableGenBasic{IntArbitrary}
+module ArbibableGenEvenBasic : Arbitrary with type t = evenBasic = ArbibableGeneric{GenEvenBasic}{XRep}
+
+let lol (x : evenBasic) : bool = false
+
+let z : evenBasic = get_val {ArbibableGenEvenBasic} ()
+
+
+let () = 
+  print_endline "Testing generics";
+  quickCheck lol;;
