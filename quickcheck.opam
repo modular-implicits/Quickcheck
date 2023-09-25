@@ -1,5 +1,5 @@
 opam-version: "2.0"
-name: "testing"
+name: "quickcheck"
 synopsis: "Experimental Generics library using modular implicits"
 version: "dev"
 maintainer: "dvlasits@gmail.com"

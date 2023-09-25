@@ -1,6 +1,6 @@
 module List' = List;;
 
-open Testing.QuickCheck;;
+open Quickcheck.QuickCheck;;
 (* open Imp.Show;; *)
 
 
@@ -41,11 +41,11 @@ open Generics.Generic;;
 
 type evenBasic = MkBasic of int
 
-implicit module GenEvenBasic : Generic with type t = evenBasic and type rep = int genBasic = struct 
+implicit module GenEvenBasic : Generic with type t = evenBasic and type rep = int basic = struct 
   type t = evenBasic
-  type rep = int genBasic
-  let toRep = function MkBasic x -> GenBasic ("MkBasic", x)
-  let fromRep = function GenBasic (_, x) -> MkBasic x
+  type rep = int basic
+  let toRep = function MkBasic x -> Basic ("MkBasic", x)
+  let fromRep = function Basic (_, x) -> MkBasic x
 end
 
 let lol (_ : evenBasic) (_ : int) : bool = false
@@ -54,6 +54,6 @@ let lol (_ : evenBasic) (_ : int) : bool = false
 let () = 
   let open [@warning "-33"] Imp.Show in
   let open [@warning "-33"] Generics.Generic in
-  let open [@warning "-33"] Generics.GenShow in
+  let open [@warning "-33"] Generics.Show in
   print_endline "Testing generics";
   quickCheck lol;;

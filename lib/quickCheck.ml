@@ -110,18 +110,18 @@ end
 
 let arbibable {A : Arbibable} = A.arbibable
 
-implicit module ArbibableGenBasic {X : Arbitrary} : Arbibable with type t = X.t genBasic = struct 
-  type t = X.t genBasic
-  let arbibable () = GenBasic ("", X.arbitrary ())
+implicit module ArbibableGenBasic {X : Arbitrary} : Arbibable with type t = X.t basic = struct 
+  type t = X.t basic
+  let arbibable () = Basic ("", X.arbitrary ())
 end
 
-implicit module ArbibableGenProd {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) genProd = struct 
-  type t = (X.t, Y.t) genProd
-  let arbibable () = GenProd (X.arbibable (), Y.arbibable ())
+implicit module ArbibableGenProd {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) prod = struct 
+  type t = (X.t, Y.t) prod
+  let arbibable () = Prod (X.arbibable (), Y.arbibable ())
 end
 
-implicit module ArbibableGenSum {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) genSum = struct 
-  type t = (X.t, Y.t) genSum
+implicit module ArbibableGenSum {X : Arbibable} {Y : Arbibable} : Arbibable with type t = (X.t, Y.t) sum = struct 
+  type t = (X.t, Y.t) sum
   let arbibable () = let rand = Random.int 2 in 
     if rand = 0 then Left (X.arbibable ()) else Right (Y.arbibable ())
 end
