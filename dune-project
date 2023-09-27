@@ -1,3 +1,3 @@
 (lang dune 2.9)
 
-(name testing)
+(name quickcheck)
