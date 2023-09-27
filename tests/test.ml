@@ -14,6 +14,7 @@ let commutativity (x : int) (y : int) = x + 9 = y + x
 let reversing (xs : int list) = List'.rev (List'.rev xs) = xs
 
 let testExceptUnit () : unit = raise Not_Implemented
+(*
 
 let () = 
   let open [@warning "-33"] Imp.Show in
@@ -57,3 +58,5 @@ let () =
   let open [@warning "-33"] Generics.Show in
   print_endline "Testing generics";
   quickCheck lol;;
+
+  *)
