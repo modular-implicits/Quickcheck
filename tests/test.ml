@@ -1,6 +1,6 @@
 module List' = List;;
 
-open Quickcheck.QuickCheck;;
+open QuickcheckM.QuickCheck;;
 (* open Imp.Show;; *)
 
 

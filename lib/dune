@@ -1,5 +1,5 @@
 (library
- (public_name quickcheck)
+ (public_name quickcheckM)
  (modules QuickCheck)
  (libraries imp generics)
  (synopsis "testing framework"))
